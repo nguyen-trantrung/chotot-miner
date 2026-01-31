@@ -6,16 +6,14 @@ requires-python = ">=3.13"
 dependencies = []
 
 [tool.uv.sources]
-chotot-miner-shared = { workspace = true }
 chotot-miner-cli = { workspace = true }
 
 [tool.uv.workspace]
-members = ["shared", "cli"]
+members = ["cli"]
 
 [tool.uv]
 dev-dependencies = [
     "pytest>=8.3.2",
-    "chotot-miner-shared",
     "chotot-miner-cli",
 ]
 package = false
