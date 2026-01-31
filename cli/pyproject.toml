@@ -10,6 +10,7 @@ dependencies = [
     "lxml>=5.0.0",
     "rich>=13.0.0",
     "pypika>=0.48.0",
+    "prettytable>=3.0.0",
 ]
 
 [project.scripts]

@@ -2,6 +2,7 @@
 
 import click
 from pathlib import Path
+from prettytable import PrettyTable
 
 from chotot_miner_cli.scraper import ChototScraper
 from chotot_miner_cli.output import TSVWriter, SQLiteWriter
@@ -10,7 +11,6 @@ from chotot_miner_cli.output import TSVWriter, SQLiteWriter
 @click.group()
 @click.version_option(version="0.1.0")
 def cli():
-    """Chotot Miner - Web scraping tool for Chotot.vn"""
     pass
 
 
@@ -38,43 +38,40 @@ def cli():
     help="Output file path (default: output.tsv or output.db)",
 )
 def run(url: str, count: int, output: str, output_file: str):
-    """Scrape listings from Chotot.vn and save to file."""
-    
-    click.echo(f"Starting Chotot Miner...")
-    click.echo(f"URL: {url}")
-    click.echo(f"Count: {count}")
-    click.echo(f"Output format: {output}")
-    
-    # Set default output file if not provided
+
     if not output_file:
         output_file = f"output.{output}" if output == "tsv" else "output.db"
-    
-    output_path = Path(output_file)
-    
+
+    table = PrettyTable()
+    table.field_names = ["Setting", "Value"]
+    table.header = False
+    table.align["Setting"] = "l"
+    table.align["Value"] = "l"
+    table.add_row(["URL", url])
+    table.add_row(["Count", count])
+    table.add_row(["Output format", output])
+    click.echo(table)
+    click.echo()
     try:
-        # Initialize scraper
-        scraper = ChototScraper(url)
-        
-        # Scrape listings
-        click.echo(f"\nScraping {count} listings...")
-        listings = scraper.scrape(count)
-        
-        click.echo(f"Successfully scraped {len(listings)} listings")
-        
-        # Write output
-        click.echo(f"Writing to {output_path}...")
-        
         if output == "tsv":
-            writer = TSVWriter(output_path)
+            writer = TSVWriter(Path(output_file))
         else:
-            writer = SQLiteWriter(output_path)
-        
+            writer = SQLiteWriter(Path(output_file))
+
+        scraper = ChototScraper(url, writer=writer)
+
+        listings = scraper.scrape(count)
+
+        click.echo()
+        click.echo(f"Successfully scraped {len(listings)} listings")
+
+        click.echo(f"Writing final data to {output_file}...")
         writer.write(listings)
-        
-        click.echo(f"✓ Data saved to {output_path}")
-        
+
+        click.echo(f"Data saved to {output_file}")
+
     except Exception as e:
-        click.echo(f"✗ Error: {e}", err=True)
+        click.echo(f"Error: {e}", err=True)
         raise click.Abort()
 
 
