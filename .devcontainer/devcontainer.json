@@ -1,0 +1,33 @@
+{
+    "name": "Chotot Miner CLI",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
+    },
+    "workspaceFolder": "/home/vscode/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/workspace,type=bind",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "tamasfe.even-better-toml",
+                "github.copilot",
+                "github.copilot-chat"
+            ],
+            "settings": {
+                "python.pythonPath": "/home/vscode/workspace/.venv/bin/python",
+                "python.defaultInterpreterPath": "/home/vscode/workspace/.venv/bin/python",
+                "python.terminal.activateEnvironment": true,
+                "[python]": {
+                    "editor.defaultFormatter": "ms-python.autopep8",
+                    "editor.formatOnSave": true,
+                    "editor.codeActionsOnSave": {
+                        "source.fixAll": "explicit",
+                        "source.organizeImports": "explicit"
+                    }
+                }
+            }
+        }
+    }
+}

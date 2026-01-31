@@ -1,0 +1,26 @@
+[project]
+name = "chotot-miner-cli"
+version = "0.1.0"
+description = "Chotot Miner CLI - Web scraping tool for Chotot.vn"
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.1.0",
+    "httpx>=0.27.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
+    "rich>=13.0.0",
+    "chotot-miner-shared",
+]
+
+[project.scripts]
+chotot-miner = "chotot_miner_cli.main:cli"
+
+[tool.uv.sources]
+chotot-miner-shared = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/chotot_miner_cli"]
