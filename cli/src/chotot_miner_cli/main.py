@@ -5,7 +5,7 @@ from pathlib import Path
 from prettytable import PrettyTable
 
 from chotot_miner_cli.scraper import ChototScraper
-from chotot_miner_cli.output import TSVWriter, SQLiteWriter
+from chotot_miner_cli.output import SQLiteWriter
 
 
 @click.group()
@@ -27,20 +27,20 @@ def cli():
     help="Number of listings to scrape (default: 100)",
 )
 @click.option(
-    "--output",
-    type=click.Choice(["tsv", "sqlite"], case_sensitive=False),
-    default="tsv",
-    help="Output format (default: tsv)",
-)
-@click.option(
     "--output-file",
     type=click.Path(),
-    help="Output file path (default: output.tsv or output.db)",
+    help="Output file path (default: output.db)",
 )
-def run(url: str, count: int, output: str, output_file: str):
+@click.option(
+    "--recursion-depth",
+    type=int,
+    default=2,
+    help="Recursion depth for similar products (default: 2)",
+)
+def run(url: str, count: int, output_file: str, recursion_depth: int):
 
     if not output_file:
-        output_file = f"output.{output}" if output == "tsv" else "output.db"
+        output_file = "output.db"
 
     table = PrettyTable()
     table.field_names = ["Setting", "Value"]
@@ -49,24 +49,21 @@ def run(url: str, count: int, output: str, output_file: str):
     table.align["Value"] = "l"
     table.add_row(["URL", url])
     table.add_row(["Count", count])
-    table.add_row(["Output format", output])
+    table.add_row(["Recursion depth", recursion_depth])
     click.echo(table)
     click.echo()
     try:
-        if output == "tsv":
-            writer = TSVWriter(Path(output_file))
-        else:
-            writer = SQLiteWriter(Path(output_file))
+        writer = SQLiteWriter(Path(output_file))
 
-        scraper = ChototScraper(url, writer=writer)
+        scraper = ChototScraper(
+            url, writer=writer, recursion_depth=recursion_depth)
 
         listings = scraper.scrape(count)
 
         click.echo()
         click.echo(f"Successfully scraped {len(listings)} listings")
-
-        click.echo(f"Writing final data to {output_file}...")
-        writer.write(listings)
+        click.echo("Normalizing features into columns...")
+        writer.normalize_features()
 
         click.echo(f"Data saved to {output_file}")
 
