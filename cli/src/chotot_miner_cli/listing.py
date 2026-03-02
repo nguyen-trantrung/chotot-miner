@@ -14,6 +14,7 @@ class Listing:
     description: str
     url: str
     features: Optional[str] = None  # JSON string
+    owner_type: Optional[str] = None
 
     @staticmethod
     def sql_schema() -> str:
@@ -28,6 +29,7 @@ class Listing:
             "description TEXT",
             "url TEXT",
             "features TEXT",
+            "owner_type TEXT",
             "scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
         ]
 
@@ -39,7 +41,7 @@ class Listing:
         query = SQLLiteQuery \
             .into(listings_table) \
             .columns(
-                'listing_id', 'title', 'price', 'location', 'description', 'url', 'features'
+                'listing_id', 'title', 'price', 'location', 'description', 'url', 'features', 'owner_type'
             ).insert(
                 self.listing_id,
                 self.title,
@@ -47,7 +49,8 @@ class Listing:
                 self.location,
                 self.description,
                 self.url,
-                self.features
+                self.features,
+                self.owner_type
             )
 
         query_str = str(query)

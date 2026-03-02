@@ -37,7 +37,13 @@ def cli():
     default=2,
     help="Recursion depth for similar products (default: 2)",
 )
-def run(url: str, count: int, output_file: str, recursion_depth: int):
+@click.option(
+    "--workers",
+    type=int,
+    default=10,
+    help="Number of parallel workers for fetching listing details (default: 10)",
+)
+def run(url: str, count: int, output_file: str, recursion_depth: int, workers: int):
 
     if not output_file:
         output_file = "output.db"
@@ -50,13 +56,14 @@ def run(url: str, count: int, output_file: str, recursion_depth: int):
     table.add_row(["URL", url])
     table.add_row(["Count", count])
     table.add_row(["Recursion depth", recursion_depth])
+    table.add_row(["Workers", workers])
     click.echo(table)
     click.echo()
     try:
         writer = SQLiteWriter(Path(output_file))
 
         scraper = ChototScraper(
-            url, writer=writer, recursion_depth=recursion_depth)
+            url, writer=writer, recursion_depth=recursion_depth, max_workers=workers)
 
         listings = scraper.scrape(count)
 
@@ -67,6 +74,20 @@ def run(url: str, count: int, output_file: str, recursion_depth: int):
 
         click.echo(f"Data saved to {output_file}")
 
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        raise click.Abort()
+
+
+@cli.command()
+@click.argument("db_file", type=click.Path(exists=True, path_type=Path))
+def normalize(db_file: Path):
+    """Normalize the features column of a scraped SQLite DB into flat columns."""
+    try:
+        writer = SQLiteWriter(db_file)
+        click.echo(f"Normalizing features in {db_file}...")
+        writer.normalize_features()
+        click.echo("Done.")
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         raise click.Abort()

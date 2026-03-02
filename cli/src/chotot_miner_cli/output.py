@@ -48,15 +48,16 @@ class SQLiteWriter:
                         listing.location,
                         listing.description,
                         listing.url,
-                        listing.features
+                        listing.features,
+                        listing.owner_type
                     )
                     for listing in new_listings
                 ]
 
                 cursor.executemany(
                     """INSERT OR REPLACE INTO listings 
-                       (listing_id, title, price, location, description, url, features) 
-                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                       (listing_id, title, price, location, description, url, features, owner_type) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                     insert_data
                 )
 
@@ -73,7 +74,14 @@ class SQLiteWriter:
             conn.close()
 
     def normalize_features(self) -> None:
-        """Expand the features JSON column into individual columns."""
+        """Normalize the SQLite output after scraping.
+
+        Reads the `features` JSON column (a list of {id, value} objects scraped
+        from each listing detail page), creates a dedicated TEXT column for every
+        unique feature id found across all rows, back-fills each row with the
+        corresponding value, and finally drops the original `features` column so
+        the table is fully flat and ready for analysis.
+        """
         import json
 
         conn = sqlite3.connect(self.output_path)
